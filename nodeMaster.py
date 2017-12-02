@@ -11,18 +11,20 @@ param_grid = {
 answers = {}
 context = zmq.Context()
 socket = context.socket(zmq.REQ)
+print("Conectando")
 
 for i in range(len(address)):
-    socket.connect(f"tcp://{address[i]}")
+    print("Connecting with",address[i])
+    socket.connect("tcp://"+address[i])
     message = {
-        'learning_rate': [param_grid['learning_rate']],
+        'learning_rate': param_grid['learning_rate'],
         'dropout_rate': [param_grid['dropout_rate'][i]],
-        'units': [param_grid['units']]
+        'units': param_grid['units']
     }
 
     socket.send_json(message)
+    print("Send message")
     answers[address[i]] = socket.recv_json()
     print("Finish him!! of: ", address[i])
-
-    best_score = max(answers.keys())
-    print(f"The best score is: {best_score}")
+    socket.disconnect("tcp://"+address[i])
+print(answers)
