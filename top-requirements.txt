@@ -3,5 +3,6 @@ jupyter
 keras
 matplotlib
 numpy
+pyzmq
 scikit-learn
 tensorflow
