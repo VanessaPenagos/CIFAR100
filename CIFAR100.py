@@ -56,8 +56,8 @@ X_test = X_test.astype(np.float32) / 255
 y_train = np_utils.to_categorical(y_train)
 y_test = np_utils.to_categorical(y_test)
 
-epochs = 1 #300
-batch_size = 5 #32
+epochs = 300
+batch_size = 32
 training_size = X_train.shape[0]
 
 param_grid = {
@@ -71,11 +71,11 @@ print(param_grid)
 model = KerasClassifier(
     build_fn=create_model,
     epochs=epochs,
-    steps_per_epoch= 2, #training_size // batch_size,
+    steps_per_epoch= training_size // batch_size
     verbose=0)
 
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1,cv=2)
-grid.fit(X_train[:5], y_train[:5])
+grid.fit(X_train, y_train)
 
 print("Best Score: ",grid.best_score_, " Best Params: ", grid.best_params_)
 
