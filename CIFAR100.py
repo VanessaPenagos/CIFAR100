@@ -8,8 +8,9 @@ from keras.datasets import cifar100
 from keras.utils import np_utils
 import numpy as np
 from sklearn.model_selection import GridSearchCV
-import zmq
 
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
 def create_model(learning_rate=1e-3, dropout_rate=0.1, units=8):
     model = Sequential()
@@ -57,29 +58,32 @@ y_test = np_utils.to_categorical(y_test)
 
 epochs = 1 #300
 batch_size = 5 #32
-port = "5000"
 training_size = X_train.shape[0]
 
-context = zmq.Context()
-socket = context.socket(zmq.REP)
+param_grid = {
+    'learning_rate': [1e-3, 1e-2],
+    'dropout_rate': [0.2, 0.4, 0.8],
+    'units': [4, 8, 16]
+}
 
-print("Waiting")
-socket.bind("tcp://*:"+port)
-
-param_grid = socket.recv_json()
 print(param_grid)
 
 model = KerasClassifier(
     build_fn=create_model,
     epochs=epochs,
-    steps_per_epoch=2,  #training_size // batch_size,
+    steps_per_epoch= 2, #training_size // batch_size,
     verbose=0)
 
 grid = GridSearchCV(estimator=model, param_grid=param_grid, n_jobs=-1,cv=2)
-grid.fit(X_train[:10], y_train[:10])
+grid.fit(X_train[:5], y_train[:5])
 
-answer = {'best_score': grid.best_score_}
-socket.send_json(answer)
+print("Best Score: ",grid.best_score_, " Best Params: ", grid.best_params_)
+
+means = grid.cv_results_['mean_test_score']
+params = grid.cv_results_['params']
+
+for mean, param in zip(means, params):
+    print("%f with: %r" %(mean, param))
 
 # PRUEBA SIN GRIDSEARCH
 # model = create_model()
